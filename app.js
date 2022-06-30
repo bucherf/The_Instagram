@@ -1,12 +1,10 @@
 var express = require('express')
-//var cookieParser = require('cookie-parser');
-//var session = require('express-session');
-//var bcrypt = require('bcrypt');
+var session = require('express-session');
+var bcrypt = require('bcrypt');
 var app = express();
 var bodyParser = require('body-parser');
-//var MongoStore = require('connect-mongo');
-var mongoose = require('mongoose')
-var cookie = express();
+//var  = require('connect-mongo');
+var mongoose = require('mongoose');
 
 var fs = require('fs');
 var path = require('path');
@@ -14,20 +12,13 @@ require('dotenv/config');
 
 app.use(express.static(__dirname));
 
-//app.use(cookieParser());
-
-/*app.use(session({
-	secret: bcrypt.genSaltSync(10),
-	resave: false,
-	saveUninitialized: true,
-	cookie: { MaxAge: oneDay },
-	store: MongoStore.create({mongoUrl: 'mongodb+srv://bucherf:<password>@cluster0.coqvs.mongodb.net/?retryWrites=true&w=majority'})
-}));*/
-
-
-
-
-
+app.use(
+    session({
+        secret: bcrypt.genSaltSync(10),
+        resave: true,
+        saveUninitialized: true
+    })
+);
 
 var modelRole = require('./model/role');
 var modelImage = require('./model/image').Image;
@@ -37,6 +28,7 @@ mongoose.connect('mongodb://localhost/instagrammy',
 	{ useNewUrlParser: true, useUnifiedTopology: true }, err => {
 		console.log('connected to  mongodb://localhost/instagrammy')
 	});
+
 
 
 app.use(bodyParser.urlencoded({ extended: false }))
