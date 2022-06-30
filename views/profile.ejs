@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Profile</title>
+	<link rel="stylesheet" href="/CSS/style.css">
+</head>
+<body>
+	<% if(user.profilPicture.data != null){ %>
+		<img src="data:<%=user.profilPicture.contentType%>;base64,
+		<%=user.profilPicture.data.toString('base64')%>">
+	 <% } %>
+	<br>
+	<div>
+		<form action="/changeProfilePicture" method="POST"  enctype="multipart/form-data">
+            <input type="hidden" name="id" value="<%= image.id %>">
+            <label for="image">Do you wanna change your profile picture?</label>
+            <input accept="image/*" name="image" id="image" required type="file">
+            <button name="submit">change</button>
+		</form>
+	</div>
+	<br>
+    <%= user.username %>
+	<br>
+	<form action="/userSearchInput" method="GET">
+		<button>Search for users</button>
+	</form>
+	<br>
+	<form action="/image/display" method="POST">
+		<button>Go to diplay images</button>
+	</form>
+	<br>
+
+    <div>
+		<input type="button" onclick="location.href='/home';" value="Home" />
+	</div>
+
+
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display Images</title>
+    <link rel="stylesheet" href="/CSS/style.css">
+</head>
+<body>
+    <h1>
+		Uploaded Images
+	</h1>
+	<div>
+		<% items.forEach(function(image) { %>
+		<div>
+			<div>
+				<img width="500px" src="data:image/<%=image.image.contentType%>;base64,
+					<%=image.image.data.toString('base64')%>">
+				<div>
+                    <h5><%= user.profilPicutre %></h5>
+                    <h5><%= user.username    %></h5>
+					<h5><%= image.title %></h5>
+                    <h6><%= image.caption %></h6>
+				</div>
+                <form method="POST" action="like">
+					<input type="hidden" name="id" value="<%= image.id %>">
+					<button name="submit">Add Like</button>
+				</form>
+				<form method="POST" action="/image/delete">
+					<input type="hidden" name="id" value="<%= image.id %>">
+					<button name="submit">Delete</button>
+				</form>
+			</div>
+		</div>
+		<% }) %>
+	</div>
+	<div>
+		<input type="button" onclick="location.href='/home';" value="Home" />
+	</div>
+
+
+</body>
+</html>
