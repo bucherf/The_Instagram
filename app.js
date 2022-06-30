@@ -31,7 +31,7 @@ app.use(express.static(__dirname));
 
 var modelRole = require('./model/role');
 var modelImage = require('./model/image').Image;
-var modelUser = require('./model/user').User;
+var modelUser = require('./model/user');
 
 mongoose.connect('mongodb://localhost/instagrammy',
 	{ useNewUrlParser: true, useUnifiedTopology: true }, err => {
@@ -83,17 +83,19 @@ app.get('/profile', (req, res) => {
 
 
 //register
-app.post('/register', upload.single('User'), (req, res) => {
+app.post('/register', upload.single('profilPicutre'), (req, res) => {
+    console.log(req.body);
 
 	var userObj = {
 		username: req.body.username,
 		password: req.body.password,
         profilPicture:
         {
-            data: null,
-            contentType: null
+            data: fs.readFileSync(path.join(__dirname + "/uploads/" + req.file.filename)),
+            contentType: "image/png"
         }
 	}
+
 	modelUser.create(userObj, (err) => {
 		if (err) {
 			console.log(err);
