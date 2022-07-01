@@ -65,6 +65,10 @@ app.get('/register', (req, res) => {
     res.render(path.join(__dirname, 'views/register'));
 });
 
+app.get('/welcome', (req, res) => {
+    res.render(path.join(__dirname, 'views/welcome'));
+});
+
 app.post('/home', (req, res) => {
     res.render(path.join(__dirname, 'views/home'));
 });
