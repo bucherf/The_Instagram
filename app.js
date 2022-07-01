@@ -1,6 +1,6 @@
 var express = require('express')
 var session = require('express-session');
-var bcrypt = require('bcrypt');
+var bcrypt = require('bcryptjs');
 var app = express();
 var bodyParser = require('body-parser');
 //var  = require('connect-mongo');
@@ -57,7 +57,7 @@ app.get('/', (req, res) => {
     res.render(path.join(__dirname, 'views/welcome'));
 });
 
-app.get('/login', (req, res) => {
+app.get('/loginView', (req, res) => {
     res.render(path.join(__dirname, 'views/login'));
 });
 
@@ -65,12 +65,29 @@ app.get('/register', (req, res) => {
     res.render(path.join(__dirname, 'views/register'));
 });
 
+app.post('/home', (req, res) => {
+    res.render(path.join(__dirname, 'views/home'));
+});
 app.get('/home', (req, res) => {
     res.render(path.join(__dirname, 'views/home'));
 });
 
 app.get('/profile', (req, res) => {
-    res.render(path.join(__dirname, 'views/profile'));
+    modelUser.findOne({'_id': req.session.userid}, (error, user)=>{
+        console.log(user)
+        res.render(path.join(__dirname, 'views/profile'), { user })
+})});
+
+app.get('/image/create', (req, res) => {
+    res.render(path.join(__dirname, 'views/image_create'));
+});
+
+app.get('/image_display', (req, res) => {
+    res.render(path.join(__dirname, 'views/image_display'));
+});
+
+app.get('/search', (req, res) => {
+    res.render(path.join(__dirname, 'views/search'));
 });
 
 
@@ -101,9 +118,10 @@ app.post('/register', upload.single('profilPicutre'), (req, res) => {
 //login
 app.post('/login', async (req, res) => {
 
-	let user = await userModel.findOne({ username: req.body.username, password:req.body.password});
+	let user = await modelUser.findOne({ username: req.body.username});
 
 	if (user){
+        if(user.password == req.body.password){
 			req.session.userid = user.id;
 			req.session.username = user.username;
 			console.log(req.session.userid);
@@ -111,7 +129,8 @@ app.post('/login', async (req, res) => {
 
 			let images = await modelImage.find({userID: req.session.userid}).exec();
 
-			res.render('/home');
+			res.redirect('/home');
+        }else{res.redirect('/loginView')}
 	} else {
 		res.status(200).send("Not an existing user")
 	}
@@ -119,7 +138,7 @@ app.post('/login', async (req, res) => {
 );
 
 //upload image
-app.post('/image/create', upload.single('image') , (req, res, next) => {
+app.post('/create_image', upload.single('image') , (req, res, next) => {
     const imageValidation = ['image/gif', 'image/jgp', 'image/jpeg', 'image/png'];
     const File = req.file.mimetype;
 
@@ -142,7 +161,7 @@ app.post('/image/create', upload.single('image') , (req, res, next) => {
             console.error(err);
             res.status(500).send('An error occurred', err);
         } else {
-            res.redirect('/');
+            res.redirect('/home');
         }
     });
 });
@@ -166,48 +185,61 @@ app.get('/image/display', (req, res) => {
             console.error(error);
             res.status(500).send('An error occurred', error);
         } else {
-            res.render(path.join(__dirname, 'views/image_display'), { items })
+            modelUser.findOne({'_id': req.session.userid}, (error, user)=>{
+                console.log(user)
+                res.render(path.join(__dirname, 'views/image_display'), { items, user })
+            })
+            
         }
     });
 });
 
 //like image
-app.post('/imgage/like',(req,res) => {
-	models.Image.findOneAndUpdate({_id:req.body.id},{$inc : {'likes':1} }, (error) => {
+app.post('/image/like',(req,res) => {
+	modelImage.findOneAndUpdate({_id:req.body.id},{$inc : {'likes':1} }, (error) => {
 		if (error)
 		{
 			throw error
 		}
 		else
 		{
-			res.redirect('/image_display')
+			res.redirect('/image/display')
 		}
 	})
 });
 
 
-//edit image
+//edit profile
 app.post('/changeProfilePicture', upload.single('image') , (req, res) => {
 
-    modelImage.findOneAndUpdate(
-        { _id: req.body.id }, 
+    modelUser.findOneAndUpdate(
+        { _id: req.session.userid }, 
         { image: {data: fs.readFileSync(path.join(__dirname + '/uploads/' + req.file.filename))} },
         (error, item) => {
             if(error) {
                 console.error(error);
                 res.status(500).send('An error occurred', error); 
             } else {
-                res.redirect('/image_display');
+                res.redirect('/home');
             }
         })
 });
 
+//search
+app.post('/search', async(req, res, next) => {
+
+	req.session.searchTerm = req.body.userInput;
+	let searchTerm = req.body.userInput;
+
+	console.log(typeof req.session.searchTerm);
+	console.log(searchTerm);
+	console.log(req.body); 
+
+	let searchUsers = await modelUser.find({username: { $regex:  searchTerm, $options: "i"}});
 
 
-
-
-
-
+	res.render('userSearch', {foundUsers: searchUsers});
+})
 
 var port = process.env.PORT || '3333';
 app.listen(port, err => {
